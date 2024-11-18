@@ -18,9 +18,11 @@ const LEFT_KEY: Key = Key::A;
 const RIGHT_KEY: Key = Key::D;
 
 // adjusted for 1920x1080
+// const WINDOW_WIDTH: i32 = 1920;
+// const WINDOW_HEIGHT: i32 = 1080;
 const CROP_TOP: i32 = 680;
 const CROP_BOTTOM: i32 = 810;
-const CROP_LEFT: i32 = 1130;
+const CROP_LEFT: i32 = 1120;
 const CROP_RIGHT: i32 = 1230;
 
 const PIXEL_DELTA: u8 = 10;
@@ -39,7 +41,7 @@ enum FishKey {
 fn main() {
     println!("-- HoloCure need to be in windowed mode 1920x1080. --");
 
-    let mut enigo = Enigo::new();
+    let mut enigo = Enigo::new(&Settings::default()).unwrap();
     let hwnd = find_window(WINDOW_TITLE).unwrap();
 
     let mut last_key: Option<FishKey> = None;
@@ -62,28 +64,29 @@ fn main() {
 
         // convert to image and save for debugging
         let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
-        // img.save("screenshot.jpg").unwrap();
+        // img.save("screenshot.png").unwrap();
 
         if fishing {
             let key = key_to_press(&img);
             if let Some(ref key) = key {
                 match key {
-                    FishKey::Round => enigo.key_down(ROUND_KEY),
-                    FishKey::Up => enigo.key_down(UP_KEY),
-                    FishKey::Down => enigo.key_down(DOWN_KEY),
-                    FishKey::Left => enigo.key_down(LEFT_KEY),
-                    FishKey::Right => enigo.key_down(RIGHT_KEY),
+                    FishKey::Round => enigo.key(ROUND_KEY, Direction::Press),
+                    FishKey::Up => enigo.key(UP_KEY, Direction::Press),
+                    FishKey::Down => enigo.key(DOWN_KEY, Direction::Press),
+                    FishKey::Left => enigo.key(LEFT_KEY, Direction::Press),
+                    FishKey::Right => enigo.key(RIGHT_KEY, Direction::Press),
                 }
+                .unwrap();
                 if last_key.as_ref() != Some(key) {
                     println!("pressed {key:?}");
                 }
                 last_key_time = Some(Instant::now());
             } else {
-                enigo.key_up(ROUND_KEY);
-                enigo.key_up(UP_KEY);
-                enigo.key_up(DOWN_KEY);
-                enigo.key_up(LEFT_KEY);
-                enigo.key_up(RIGHT_KEY);
+                enigo.key(ROUND_KEY, Direction::Release).unwrap();
+                enigo.key(UP_KEY, Direction::Release).unwrap();
+                enigo.key(DOWN_KEY, Direction::Release).unwrap();
+                enigo.key(LEFT_KEY, Direction::Release).unwrap();
+                enigo.key(RIGHT_KEY, Direction::Release).unwrap();
                 if let Some(last_key_time) = last_key_time {
                     if last_key_time.elapsed() > Duration::from_secs(1) {
                         fishing = false;
@@ -109,7 +112,9 @@ fn main() {
                 > Duration::from_millis(500 * (try_fishing_attempt + 1))
             {
                 println!("trying to fish...");
-                enigo.key_click(FISHING_KEY);
+                enigo.key(FISHING_KEY, Direction::Press).unwrap();
+                thread::sleep(Duration::from_millis(100));
+                enigo.key(FISHING_KEY, Direction::Release).unwrap();
                 try_fishing_attempt += 1;
                 last_fishing_attempt = Instant::now();
             }

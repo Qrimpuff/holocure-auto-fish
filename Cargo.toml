@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 win-screenshot = "4.0.5"
-image = "0.24.7"
-enigo = "0.1.2"
+image = "0.25.5"
+enigo = "0.2.1"
