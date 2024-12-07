@@ -1,6 +1,5 @@
 use std::{
-    cmp::Ordering,
-    env, thread,
+    cmp::Ordering, thread,
     time::{Duration, Instant},
 };
 
